@@ -31,3 +31,13 @@ export const createEvent = async (req:Request,res:Response,next:NextFunction):Pr
         next(err);
     }
 }
+
+// GET /events - get all events
+export const getAllEvents = async (req:Request,res:Response,next:NextFunction):Promise<void> => {
+    try{
+        const events = await Event.find({});
+        res.status(200).json(events)
+    }catch(err){
+        next(err);
+    }
+}
