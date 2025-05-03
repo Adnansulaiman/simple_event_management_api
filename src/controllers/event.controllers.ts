@@ -59,3 +59,34 @@ export const getAnEvent = async (req:Request, res:Response, next:NextFunction):P
         next(error);
     }
 }
+
+// PUT /events/:id - update an event
+export const updateEvent = async (req:Request,res:Response,next:NextFunction): Promise<void> =>{
+    try{
+        const { title, description, date } = req.body;
+        const {id} = req.params;
+
+        const updateData: any = {};
+        if (title) updateData.title = title;
+        if (description) updateData.description = description;
+        if (date) {
+            const eventDate = new Date(date);
+            if (isNaN(eventDate.getTime())) {
+                const error = new Error('Invalid date format');
+                (error as any).status = 400;
+                throw error;
+            }
+        updateData.date = eventDate;
+        }
+
+        const updatedEvent = await Event.findByIdAndUpdate(id,updateData,{new:true});
+        if(!updatedEvent){
+            const error = new Error('Event not found');
+            (error as any).status = 404;
+            throw error;
+        }
+        res.status(200).json(updatedEvent)
+    }catch(error){
+        next(error)
+    }
+}
