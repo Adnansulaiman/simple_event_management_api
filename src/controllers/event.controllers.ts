@@ -90,3 +90,20 @@ export const updateEvent = async (req:Request,res:Response,next:NextFunction): P
         next(error)
     }
 }
+
+// DELETE /events/:id - Delete an event
+export const deleteEvent = async (req:Request, res:Response, next:NextFunction):Promise<void> =>{
+    try{
+        const {id} = req.params;
+        const deletedEvent = await Event.findByIdAndDelete(id);
+        if(!deletedEvent){
+            const error = new Error('Event not found');
+            (error as any).status = 404;
+            throw error;
+        }
+
+        res.status(200).json({message:"Event deleted successfully."})
+    }catch(error){
+        next(error)
+    }
+}
