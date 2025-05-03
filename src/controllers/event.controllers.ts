@@ -8,15 +8,17 @@ export const createEvent = async (req:Request,res:Response,next:NextFunction):Pr
 
         // validation
         if(!title || !description || !date){
-            res.status(400).json({message:"All fields are required."});
-            return;
+            const error = new Error('All fields are required');
+            (error as any).status = 400;
+            throw error;
         }
 
         // event validation 
         const eventDate = new Date(date);
         if(isNaN(eventDate.getTime())){
-            res.status(400).json({message:"Invalid date format."});
-            return;
+            const error = new Error('Invalid date format');
+            (error as any).status = 400;
+            throw error;
         }
         
         // create event
@@ -32,12 +34,28 @@ export const createEvent = async (req:Request,res:Response,next:NextFunction):Pr
     }
 }
 
-// GET /events - get all events
+// GET /events - Get all events
 export const getAllEvents = async (req:Request,res:Response,next:NextFunction):Promise<void> => {
     try{
         const events = await Event.find({});
         res.status(200).json(events)
     }catch(err){
         next(err);
+    }
+}
+
+// GET /events/:id - Get an event
+export const getAnEvent = async (req:Request, res:Response, next:NextFunction):Promise<void> =>{
+    try{
+        const {id} = req.params;
+        const event = await Event.findById(id)
+        if(!event){
+            const error = new Error('Event not found');
+            (error as any).status = 404;
+            throw error;
+        }
+        res.status(200).json(event);
+    }catch(error){
+        next(error);
     }
 }
