@@ -15,8 +15,14 @@ export const createEvent = async (req:Request,res:Response,next:NextFunction):Pr
 
         // event validation 
         const eventDate = new Date(date);
-        if(isNaN(eventDate.getTime())){
+        const now = new Date();
+        if (isNaN(eventDate.getTime())) {
             const error = new Error('Invalid date format');
+            (error as any).status = 400;
+            throw error;
+        }
+        if (eventDate < now) {
+            const error = new Error('Event date cannot be in the past');
             (error as any).status = 400;
             throw error;
         }
@@ -71,13 +77,20 @@ export const updateEvent = async (req:Request,res:Response,next:NextFunction): P
         if (description) updateData.description = description;
         if (date) {
             const eventDate = new Date(date);
+            const now = new Date();
             if (isNaN(eventDate.getTime())) {
                 const error = new Error('Invalid date format');
                 (error as any).status = 400;
                 throw error;
             }
-        updateData.date = eventDate;
+            if (eventDate < now) {
+                const error = new Error('Event date cannot be in the past');
+                (error as any).status = 400;
+                throw error;
+            }
+            updateData.date = eventDate;
         }
+        
 
         const updatedEvent = await Event.findByIdAndUpdate(id,updateData,{new:true});
         if(!updatedEvent){
